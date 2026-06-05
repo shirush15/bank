@@ -427,3 +427,11 @@ FodyWeavers.xsd
 *.msix
 *.msm
 *.msp
+
+# NestJS / Node specific
+dist/
+coverage/
+.nyc_output/
+yarn.lock
+package-lock.json
+

@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:16
+    container_name: bank-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bank_db
+    ports:
+      # host 5433 -> container 5432, to avoid clashing with a local Postgres
+      - '5433:5432'
+    volumes:
+      - bank-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d bank_db']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: bank-api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Inside the compose network the DB is reachable at host "db", port 5432.
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/bank_db
+      PORT: '3000'
+      NODE_ENV: production
+      LOG_LEVEL: info
+    ports:
+      - '3000:3000'
+
+volumes:
+  bank-db-data:
